@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { rpc } from '../../lib/supabase'
+import { rpc, supabase } from '../../lib/supabase'
 import styles from './WorkersPage.module.css'
 
 interface AdminWorker {
@@ -64,11 +64,10 @@ export default function WorkersPage() {
   async function handleNotify(w: AdminWorker) {
     setNotifyingId(w.id)
     try {
-      await rpc('admin_send_push', {
-        p_worker_id: w.id,
-        p_title: 'C-Clean',
-        p_body: t('admin.notifyBody'),
+      const { error } = await supabase.functions.invoke('send-push', {
+        body: { p_worker_id: w.id, p_title: 'C-Clean', p_body: t('admin.notifyBody') },
       })
+      if (error) throw error
       setNotifyMsg(`${w.name} ✓`)
       setTimeout(() => setNotifyMsg(''), 3000)
     } catch {
