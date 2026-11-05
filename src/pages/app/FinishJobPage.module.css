@@ -1,0 +1,128 @@
+.page {
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.back {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: var(--text);
+  padding: 4px 8px 4px 0;
+  line-height: 1;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.photoSection {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-soft);
+  transition: border-color 0.15s;
+}
+
+.photoSection:hover {
+  border-color: var(--orange);
+}
+
+.preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  min-height: 220px;
+}
+
+.photoPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+}
+
+.cameraIcon {
+  font-size: 3rem;
+}
+
+.photoHint {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.retakeBtn {
+  width: 100%;
+}
+
+.noteSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noteLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.noteInput {
+  resize: none;
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #dc2626;
+  font-weight: 500;
+  text-align: center;
+}
+
+.submitBtn {
+  width: 100%;
+  margin-top: auto;
+}
