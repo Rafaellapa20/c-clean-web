@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
+import AdminChangePasswordPage from './pages/admin/AdminChangePasswordPage'
 import JobsPage from './pages/admin/JobsPage'
 import WorkersPage from './pages/admin/WorkersPage'
+import UsersPage from './pages/admin/UsersPage'
 import AppLayout from './pages/app/AppLayout'
 import LoginPage from './pages/app/LoginPage'
 import WorkerJobsPage from './pages/app/JobsPage'
@@ -16,7 +18,10 @@ function RequireWorker({ children }: { children: React.ReactNode }) {
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-  return getAdminSession() ? <>{children}</> : <Navigate to="/admin/login" replace />
+  const s = getAdminSession()
+  if (!s) return <Navigate to="/admin/login" replace />
+  if (s.mustChange) return <Navigate to="/admin/change-password" replace />
+  return <>{children}</>
 }
 
 export default function App() {
@@ -25,10 +30,12 @@ export default function App() {
       <UpdateBanner />
       <Routes>
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
         <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
           <Route index element={<Navigate to="jobs" replace />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="workers" element={<WorkersPage />} />
+          <Route path="users" element={<UsersPage />} />
         </Route>
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<LoginPage />} />

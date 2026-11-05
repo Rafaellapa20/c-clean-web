@@ -69,5 +69,11 @@ export default {
     notify: 'Notificar',
     notifyBody: 'Tens um novo trabalho atribuído.',
     logout: 'Sair',
+    users: 'Utilizadores',
+    addAdmin: '+ Administrador',
+    statusPending: 'A aguardar 1.º login',
+    statusActive: 'Ativo',
+    statusDisabled: 'Desativado',
+    resetAccess: 'Repor acesso',
   },
 }

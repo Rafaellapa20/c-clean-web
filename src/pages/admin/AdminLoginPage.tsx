@@ -1,20 +1,44 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { loginAdmin } from '../../lib/admin-auth'
+import { loginAdmin } from '../../lib/admin-users'
+import { setAdminSession } from '../../lib/admin-auth'
 import styles from './AdminLoginPage.module.css'
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (loginAdmin(password)) {
-      navigate('/admin/jobs', { replace: true })
-    } else {
-      setError(true)
+    setError('')
+    setLoading(true)
+    const res = await loginAdmin(email, password)
+    setLoading(false)
+
+    if (res.error === 'expired') {
+      setError('Acesso expirado. Peça um novo acesso ao administrador.')
+      return
+    }
+    if (res.error || !res.token) {
+      setError('Email ou palavra-passe incorretos.')
       setPassword('')
+      return
+    }
+
+    setAdminSession({
+      token: res.token!,
+      name: res.name!,
+      role: res.role!,
+      mustChange: !!res.must_change_password,
+    })
+
+    if (res.must_change_password) {
+      navigate('/admin/change-password', { replace: true })
+    } else {
+      navigate('/admin/jobs', { replace: true })
     }
   }
 
@@ -26,15 +50,24 @@ export default function AdminLoginPage() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
             className="input"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setError('') }}
+            autoFocus
+            required
+          />
+          <input
+            className="input"
             type="password"
             placeholder="Palavra-passe"
             value={password}
-            onChange={e => { setPassword(e.target.value); setError(false) }}
-            autoFocus
+            onChange={e => { setPassword(e.target.value); setError('') }}
+            required
           />
-          {error && <p className={styles.error}>Palavra-passe incorreta</p>}
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-            Entrar
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'A entrar…' : 'Entrar'}
           </button>
         </form>
       </div>

@@ -1,17 +1,21 @@
-const KEY = 'cclean_admin'
+const KEY = 'cclean_admin_v2'
 
-function getPassword(): string {
-  return (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) || 'admin1234'
+export interface AdminSession {
+  token: string
+  name: string
+  role: string
+  mustChange: boolean
 }
 
-export function getAdminSession(): boolean {
-  try { return localStorage.getItem(KEY) === 'ok' } catch { return false }
+export function getAdminSession(): AdminSession | null {
+  try {
+    const raw = localStorage.getItem(KEY)
+    return raw ? (JSON.parse(raw) as AdminSession) : null
+  } catch { return null }
 }
 
-export function loginAdmin(password: string): boolean {
-  if (password !== getPassword()) return false
-  try { localStorage.setItem(KEY, 'ok') } catch { /* ignore */ }
-  return true
+export function setAdminSession(s: AdminSession): void {
+  try { localStorage.setItem(KEY, JSON.stringify(s)) } catch { /* ignore */ }
 }
 
 export function logoutAdmin(): void {

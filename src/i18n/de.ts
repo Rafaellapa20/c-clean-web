@@ -69,5 +69,11 @@ export default {
     notify: 'Benachrichtigen',
     notifyBody: 'Du hast eine neue Aufgabe zugewiesen bekommen.',
     logout: 'Abmelden',
+    users: 'Benutzer',
+    addAdmin: '+ Administrator',
+    statusPending: 'Wartet auf 1. Login',
+    statusActive: 'Aktiv',
+    statusDisabled: 'Deaktiviert',
+    resetAccess: 'Zugang zurücksetzen',
   },
 }
