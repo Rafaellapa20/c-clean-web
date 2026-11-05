@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['logo.png', 'favicon.ico'],
+      includeAssets: ['logo.png', 'logo-192.png', 'favicon.ico'],
       manifest: {
         name: 'C-Clean',
         short_name: 'C-Clean',
@@ -18,7 +18,7 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
-          { src: '/logo.png', sizes: '192x192', type: 'image/png' },
+          { src: '/logo-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/logo.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
