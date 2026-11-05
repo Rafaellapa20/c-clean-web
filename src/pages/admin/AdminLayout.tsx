@@ -1,9 +1,16 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { logoutAdmin } from '../../lib/admin-auth'
 import styles from './AdminLayout.module.css'
 
 export default function AdminLayout() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logoutAdmin()
+    navigate('/admin/login', { replace: true })
+  }
 
   return (
     <div className={styles.layout}>
@@ -13,6 +20,9 @@ export default function AdminLayout() {
         <div className={styles.actions}>
           <button className="btn btn-ghost" onClick={() => { const l = i18n.language === 'pt' ? 'de' : 'pt'; i18n.changeLanguage(l); localStorage.setItem('lang', l) }}>
             {i18n.language === 'pt' ? 'DE' : 'PT'}
+          </button>
+          <button className="btn btn-ghost" onClick={handleLogout} title={t('admin.logout')}>
+            ⎋
           </button>
         </div>
       </header>

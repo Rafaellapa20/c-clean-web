@@ -20,6 +20,9 @@ export default function WorkersPage() {
   const [fPin, setFPin] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [notifyingId, setNotifyingId] = useState<string | null>(null)
+  const [notifyMsg, setNotifyMsg] = useState('')
 
   useEffect(() => { load() }, [])
 
@@ -46,6 +49,36 @@ export default function WorkersPage() {
     }
   }
 
+  async function handleToggle(w: AdminWorker) {
+    setTogglingId(w.id)
+    try {
+      await rpc('admin_toggle_worker', { p_worker_id: w.id, p_active: !w.active })
+      await load()
+    } catch {
+      /* ignore */
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  async function handleNotify(w: AdminWorker) {
+    setNotifyingId(w.id)
+    try {
+      await rpc('admin_send_push', {
+        p_worker_id: w.id,
+        p_title: 'C-Clean',
+        p_body: t('admin.notifyBody'),
+      })
+      setNotifyMsg(`${w.name} ✓`)
+      setTimeout(() => setNotifyMsg(''), 3000)
+    } catch {
+      setNotifyMsg('Erro ao notificar')
+      setTimeout(() => setNotifyMsg(''), 3000)
+    } finally {
+      setNotifyingId(null)
+    }
+  }
+
   return (
     <div>
       <div className={styles.topBar}>
@@ -54,6 +87,8 @@ export default function WorkersPage() {
           {showForm ? t('common.cancel') : `+ ${t('admin.addWorker')}`}
         </button>
       </div>
+
+      {notifyMsg && <p className={styles.notifyMsg}>{notifyMsg}</p>}
 
       {showForm && (
         <form onSubmit={handleAdd} className={`card ${styles.form}`}>
@@ -96,6 +131,25 @@ export default function WorkersPage() {
                 <span className={styles.jobsToday}>
                   {w.jobs_today} {t('admin.jobsToday')}
                 </span>
+              </div>
+              <div className={styles.workerActions}>
+                <button
+                  className={`btn ${w.active ? 'btn-secondary' : 'btn-primary'}`}
+                  style={{ fontSize: '0.8rem', padding: '4px 10px' }}
+                  onClick={() => handleToggle(w)}
+                  disabled={togglingId === w.id}
+                >
+                  {togglingId === w.id ? '…' : w.active ? t('admin.deactivate') : t('admin.activate')}
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  style={{ fontSize: '0.8rem', padding: '4px 10px' }}
+                  onClick={() => handleNotify(w)}
+                  disabled={notifyingId === w.id}
+                  title={t('admin.notify')}
+                >
+                  {notifyingId === w.id ? '…' : '🔔'}
+                </button>
               </div>
             </div>
           ))}

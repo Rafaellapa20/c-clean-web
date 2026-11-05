@@ -27,6 +27,11 @@ function duration(start: string, end: string): string {
   return h > 0 ? `${h}h ${m.toString().padStart(2, '0')}m` : `${m}m`
 }
 
+function toLocalDate(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 export default function JobsPage() {
   const { t, i18n } = useTranslation()
   const [jobs, setJobs] = useState<AdminJob[]>([])
@@ -36,12 +41,13 @@ export default function JobsPage() {
   const [showForm, setShowForm] = useState(false)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [photoJobId, setPhotoJobId] = useState<string | null>(null)
+  const [filterDate, setFilterDate] = useState(toLocalDate())
 
   // form state
   const [fClient, setFClient] = useState('')
   const [fAddress, setFAddress] = useState('')
   const [fTask, setFTask] = useState('')
-  const [fDate, setFDate] = useState(new Date().toISOString().slice(0, 10))
+  const [fDate, setFDate] = useState(toLocalDate())
   const [fTime, setFTime] = useState('09:00')
   const [fWorker, setFWorker] = useState('')
   const [fMats, setFMats] = useState<string[]>([])
@@ -49,18 +55,22 @@ export default function JobsPage() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { loadWorkersMaterials() }, [])
+  useEffect(() => { loadJobs() }, [filterDate])
 
-  async function load() {
-    setLoading(true)
-    const [j, w, m] = await Promise.all([
-      rpc<AdminJob[]>('admin_get_today_jobs'),
+  async function loadWorkersMaterials() {
+    const [w, m] = await Promise.all([
       rpc<Worker[]>('admin_get_workers'),
       rpc<Material[]>('admin_get_materials'),
     ])
-    setJobs(j.data || [])
     setWorkers((w.data || []).filter(x => x.active))
     setMaterials(m.data || [])
+  }
+
+  async function loadJobs() {
+    setLoading(true)
+    const { data } = await rpc<AdminJob[]>('admin_get_today_jobs', { p_date: filterDate })
+    setJobs(data || [])
     setLoading(false)
   }
 
@@ -78,7 +88,7 @@ export default function JobsPage() {
       })
       setShowForm(false)
       setFClient(''); setFAddress(''); setFTask(''); setFMats([]); setFCustom('')
-      await load()
+      await loadJobs()
     } catch (e: unknown) {
       setFormError(e instanceof Error ? e.message : t('common.error'))
     } finally {
@@ -97,16 +107,55 @@ export default function JobsPage() {
     return i18n.language === 'de' ? m.name_de : m.name_pt
   }
 
+  function exportCsv() {
+    const header = ['Data', 'Hora', 'Cliente', 'Morada', 'Tarefa', 'Funcionário', 'Estado', 'Início', 'Fim', 'Total', 'Nota']
+    const rows = jobs.map(j => [
+      j.job_date,
+      j.job_time?.slice(0, 5) ?? '',
+      j.client,
+      j.address,
+      j.task,
+      j.worker_name ?? '',
+      j.status,
+      j.started_at ? new Date(j.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+      j.finished_at ? new Date(j.finished_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+      j.started_at && j.finished_at ? duration(j.started_at, j.finished_at) : '',
+      j.note ?? '',
+    ])
+    const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `cclean-${filterDate}.csv`; a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const statusLabel = (s: string) => ({ todo: t('status.todo'), doing: t('status.doing'), done: t('status.done') }[s] ?? s)
   const statusClass = (s: string) => ({ todo: 'status-todo', doing: 'status-doing', done: 'status-done' }[s] ?? '')
 
   return (
     <div>
       <div className={styles.topBar}>
-        <h2 className={styles.heading}>{t('admin.todayJobs')}</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(s => !s)}>
-          {showForm ? t('common.cancel') : `+ ${t('admin.newJob')}`}
-        </button>
+        <div className={styles.filterRow}>
+          <h2 className={styles.heading}>{t('admin.todayJobs')}</h2>
+          <input
+            className="input"
+            type="date"
+            value={filterDate}
+            onChange={e => setFilterDate(e.target.value)}
+            style={{ width: 'auto' }}
+          />
+        </div>
+        <div className={styles.topActions}>
+          {jobs.length > 0 && (
+            <button className="btn btn-secondary" onClick={exportCsv}>
+              {t('admin.exportCsv')}
+            </button>
+          )}
+          <button className="btn btn-primary" onClick={() => setShowForm(s => !s)}>
+            {showForm ? t('common.cancel') : `+ ${t('admin.newJob')}`}
+          </button>
+        </div>
       </div>
 
       {showForm && (

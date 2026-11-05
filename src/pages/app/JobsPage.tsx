@@ -35,7 +35,7 @@ export default function JobsPage() {
 
   async function loadJobs() {
     setLoading(true)
-    const { data } = await rpc<JobRow[]>('get_today_jobs', { p_pin: session!.pin })
+    const { data } = await rpc<JobRow[]>('get_upcoming_jobs', { p_pin: session!.pin })
     setJobs(data || [])
     setLoading(false)
   }
@@ -50,7 +50,7 @@ export default function JobsPage() {
     <div className={styles.wrap}>
       <div className={styles.header}>
         <div>
-          <h2 className={styles.greeting}>{t('app.todayJobs')}</h2>
+          <h2 className={styles.greeting}>{t('app.upcomingJobs')}</h2>
           <p className={styles.worker}>{session?.name}</p>
         </div>
         <button className="btn btn-ghost" style={{ padding: '6px 12px', minHeight: 36, fontSize: '0.85rem' }}
